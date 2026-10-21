@@ -1,0 +1,12 @@
+# Nunca subir claves ni archivos de entorno
+.env
+.env.*
+*.key
+secrets*
+# Archivos que genera el notebook al ejecutarse
+indice/
+Entrega_Corte2_Evidencia.zip
+__pycache__/
+.ipynb_checkpoints/
+.DS_Store
+.obsidian/

@@ -1,0 +1,8 @@
+# Versiones usadas en Google Colab (el notebook las instala en su primera celda)
+sentence-transformers==6.1.0
+supabase==2.32.0
+groq==1.7.0
+pydantic==2.13.5
+rank-bm25==0.2.2
+numpy
+pandas
