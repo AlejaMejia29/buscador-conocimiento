@@ -1,0 +1,66 @@
+# Salida de supabase/prueba_rls_local.sql · PostgreSQL 16.15 + pgvector · 2026-11-23
+              set_config              
+--------------------------------------
+ bbbbbbbb-0000-0000-0000-000000000002
+(1 row)
+
+--- aleja (autorizada): busqueda debe dar 3
+ count 
+-------
+     3
+(1 row)
+
+--- aleja intenta insertar en el corpus de joan: debe fallar
+psql:supabase/prueba_rls_local.sql:39: ERROR:  new row violates row-level security policy for table "clase08_fragmentos"
+--- aleja se autoriza a si misma a otro: debe fallar
+psql:supabase/prueba_rls_local.sql:41: ERROR:  permission denied for table buscador_corpus_lectores
+--- aleja crea 2 conversaciones y mensajes
+--- aleja intenta crear conversacion a nombre de otro: debe fallar
+psql:supabase/prueba_rls_local.sql:46: ERROR:  new row violates row-level security policy for table "buscador_conversaciones"
+              set_config              
+--------------------------------------
+ cccccccc-0000-0000-0000-000000000003
+(1 row)
+
+--- otro (no autorizado): busqueda debe dar 0
+ count 
+-------
+     0
+(1 row)
+
+--- otro lee conversaciones/mensajes de aleja conociendo el uuid: debe dar 0 y 0
+ count 
+-------
+     0
+(1 row)
+
+ count 
+-------
+     0
+(1 row)
+
+--- otro escribe en la conversacion de aleja: debe fallar
+psql:supabase/prueba_rls_local.sql:55: ERROR:  new row violates row-level security policy for table "buscador_mensajes"
+--- otro renombra la conversacion de aleja: debe actualizar 0
+--- otro borra mensajes de aleja: debe borrar 0 o fallar
+psql:supabase/prueba_rls_local.sql:59: ERROR:  permission denied for table buscador_mensajes
+              set_config              
+--------------------------------------
+ bbbbbbbb-0000-0000-0000-000000000002
+(1 row)
+
+--- aleja ve sus 2 conversaciones y 2 mensajes, titulo intacto
+ titulo 
+--------
+ A1
+ A2
+(2 rows)
+
+ count 
+-------
+     2
+(1 row)
+
+--- anon no puede leer nada
+psql:supabase/prueba_rls_local.sql:68: ERROR:  permission denied for table buscador_conversaciones
+psql:supabase/prueba_rls_local.sql:69: ERROR:  permission denied for function buscador_buscar_fragmentos

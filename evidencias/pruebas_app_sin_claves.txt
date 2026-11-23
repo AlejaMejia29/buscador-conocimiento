@@ -1,0 +1,14 @@
+# python -m pytest pruebas -v · Python 3.13 · Linux · 2026-11-23
+pruebas/test_controles.py::test_mcp_catalogo_y_consultas PASSED          [  8%]
+pruebas/test_controles.py::test_codigo_debe_venir_del_usuario PASSED     [ 16%]
+pruebas/test_controles.py::test_citas_normalizadas_e_inexistentes PASSED [ 25%]
+pruebas/test_controles.py::test_no_responde_sobre_politicas_sin_fuente PASSED [ 33%]
+pruebas/test_controles.py::test_limites_y_repeticion PASSED              [ 41%]
+pruebas/test_controles.py::test_rrf PASSED                               [ 50%]
+pruebas/test_controles.py::test_configuracion_rechaza_clave_administrativa PASSED [ 58%]
+pruebas/test_controles.py::test_recorrido_buscar_y_responder PASSED      [ 66%]
+pruebas/test_controles.py::test_respuesta_sin_buscar_se_bloquea PASSED   [ 75%]
+pruebas/test_controles.py::test_falla_mcp_controlada_es_error_tecnico PASSED [ 83%]
+pruebas/test_controles.py::test_historial_para_modelo_ventana PASSED     [ 91%]
+pruebas/test_controles.py::test_conversacion_ajena_o_invalida_se_rechaza PASSED [100%]
+============================== 12 passed in 3.58s ==============================

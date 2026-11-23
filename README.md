@@ -4,6 +4,12 @@ Proyecto del curso **Inteligencia Artificial Generativa y Sistemas Inteligentes*
 
 **Equipo:** Joan Sebastián Sosa Bedoya y Alejandra Mejía Patiño.
 
+## Entrega final: aplicación web
+
+La versión final del proyecto es una **aplicación web con Gradio** en [`app/`](app/): cada persona entra con su cuenta de Supabase Auth, pregunta sobre las políticas, recibe la respuesta con sus fuentes y recupera sus conversaciones, guardadas en Supabase. Instalación, configuración, despliegue y pruebas: [`app/README.md`](app/README.md). Documentación integral de los tres cortes: [`BITACORA_PROYECTO.md`](BITACORA_PROYECTO.md).
+
+Lo que sigue en este archivo describe el notebook consolidado del segundo corte, que sigue siendo la forma de cargar el corpus en Supabase y de repetir la evaluación.
+
 ## Problema
 
 En una organización, las respuestas sobre vacaciones, permisos o incapacidades están repartidas en políticas internas que pocas personas leen completas. Quien pregunta usa sus propias palabras («¿puedo trabajar desde casa toda la semana?») y no las del documento («trabajo remoto»), así que una búsqueda por palabras exactas no siempre encuentra la respuesta.
@@ -36,10 +42,14 @@ Pregunta del usuario
 
 | Ruta | Qué es |
 |---|---|
+| `app/` | Aplicación web final (Gradio, agente, RAG, MCP propio e historial en Supabase). |
+| `BITACORA_PROYECTO.md` | Bitácora unificada de los tres cortes. |
 | `Buscador_Conocimiento_Final.ipynb` | Notebook final. Corre en Colab de principio a fin, sin otros notebooks ni archivos que subir. |
 | `corpus/` | Documentos autorizados: `Politica_Recursos_Humanos.md` (DOC-1001) y `Politica_Permisos.md` (DOC-1002). Son ficticios. `Manual_Induccion` (DOC-1003) se excluye por estar desactualizado. |
 | `supabase/esquema.sql` | Tabla `clase08_fragmentos`, seguridad por filas (RLS) y función `clase08_buscar_fragmentos`. |
-| `requirements.txt` | Versiones de las bibliotecas. |
+| `supabase/historial.sql` | Conversaciones y mensajes por usuario, lectores autorizados del corpus y búsqueda de la aplicación. |
+| `supabase/prueba_rls_local.sql` | Prueba de las políticas RLS en un PostgreSQL local. |
+| `requirements.txt` | Versiones de las bibliotecas del notebook (las de la aplicación están en `app/requirements.txt`). |
 | `bitacoras/` | Bitácoras de clase con sus capturas. |
 | `evidencias/` | Métricas, respuestas, pruebas de continuidad y revisión humana de la ejecución final (sin claves). |
 | `docs/` | Presentación del proyecto en PDF. |

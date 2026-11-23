@@ -10,3 +10,10 @@ __pycache__/
 .ipynb_checkpoints/
 .DS_Store
 .obsidian/
+!.env.ejemplo
+.venv/
+*.pyc
+*.sqlite3*
+*.log
+.pytest_cache/
+.gradio/
