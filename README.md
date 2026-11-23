@@ -44,6 +44,7 @@ Pregunta del usuario
 |---|---|
 | `app/` | Aplicación web final (Gradio, agente, RAG, MCP propio e historial en Supabase). |
 | `BITACORA_PROYECTO.md` | Bitácora unificada de los tres cortes. |
+| `notebooks/` | Notebooks de cada clase (02 a 11) con sus salidas. |
 | `Buscador_Conocimiento_Final.ipynb` | Notebook final. Corre en Colab de principio a fin, sin otros notebooks ni archivos que subir. |
 | `corpus/` | Documentos autorizados: `Politica_Recursos_Humanos.md` (DOC-1001) y `Politica_Permisos.md` (DOC-1002). Son ficticios. `Manual_Induccion` (DOC-1003) se excluye por estar desactualizado. |
 | `supabase/esquema.sql` | Tabla `clase08_fragmentos`, seguridad por filas (RLS) y función `clase08_buscar_fragmentos`. |
