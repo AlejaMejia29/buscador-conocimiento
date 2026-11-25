@@ -1,0 +1,5 @@
+pruebas/
+.env
+*.ipynb
+despliegue_hf/
+__pycache__/
