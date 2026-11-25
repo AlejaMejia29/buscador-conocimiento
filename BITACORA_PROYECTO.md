@@ -178,6 +178,8 @@ La Clase 05 no tuvo notebook y no hubo Clase 10.
 | C11 | Supabase no dejaba iniciar sesión | El proyecto gratuito se pausó por inactividad | Restaurarlo desde el panel | Sesión iniciada | Riesgo para la demo: revisar antes de presentar |
 | C12 | Un usuario nuevo no podía leer el corpus de otra cuenta | RLS de la Clase 08 (`owner_id = auth.uid()`) | Tabla `buscador_corpus_lectores` y función `buscador_buscar_fragmentos` sin filtro de propietario en el código (lo decide RLS) | `prueba_rls_local.sql` | Resuelto |
 | C12 | Supabase concede por defecto todos los privilegios en tablas nuevas | Configuración del proyecto | `historial.sql` los retira y deja solo los necesarios | `prueba_rls_local.sql` con privilegios por defecto simulados | Resuelto |
+| C12 | En la app real escribió un poema cuando se le pidió | El modelo respondió sin fuentes algo fuera del corpus | Regla de rechazo en el prompt (`agente_v4_app`) y bloqueo en el programa: una respuesta larga sin citas se convierte en rechazo | `test_poema_se_rechaza_aunque_el_modelo_lo_escriba` | Corregido; falta repetirlo con Groq real |
+| C12 | «¿Cuántos días remotos…? ¿Ese documento está vigente?» pidió el código en vez de buscar | La regla de aclarar si falta el código le ganó al tema | Buscar primero y consultar la vigencia con el código del fragmento (`fuente.codigo`); pedir aclaración sobre un tema del corpus sin buscar se bloquea | `test_vigencia_por_tema_usa_el_codigo_del_fragmento`, `test_aclarar_sobre_tema_del_corpus_sin_buscar_se_bloquea` | Corregido; falta repetirlo con Groq real |
 
 **Limitaciones vigentes.** El corpus es pequeño (9 fragmentos) y ficticio: con M = 10 todos los fragmentos entran como candidatos y las diferencias entre opciones son de orden. 15 casos de evaluación no dan garantía estadística. El reranker puede perder una de dos condiciones en preguntas compuestas. Las métricas miden la recuperación, no la fidelidad de la respuesta, que sigue requiriendo revisión humana. La aplicación depende de la disponibilidad de Groq y de que el proyecto de Supabase no esté pausado.
 
@@ -191,7 +193,7 @@ La Clase 05 no tuvo notebook y no hubo Clase 10.
 | Embeddings | `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`, revisión `e8f8c211226b894fcb81acc59f3b34ba3efd5f42`, 384 dim., normalizados, coseno |
 | Recuperación | Opción C: semántica (Supabase) + BM25 (k1 1,5, b 0,75, ε 0,25), RRF c = 60, M = 10, reranker `cross-encoder/mmarco-mMiniLMv2-L12-H384-v1` revisión `1427fd652930e4ba29e8149678df786c240d8825`, K = 3 |
 | Generador | Groq `openai/gpt-oss-20b`, temperatura 0, `reasoning_effort` low, 1536 tokens máx. |
-| Prompt | `agente_v3_app` (en `app/sistema.py`) |
+| Prompt | `agente_v4_app` (en `app/sistema.py`) |
 | Agente | 3 decisiones, 2 operaciones, 90 s, 24 000 caracteres de contexto, 4 turnos de memoria |
 | MCP | `servidor_mcp.py`, SDK `mcp==2.3.0`, stdio, 1 herramienta de lectura |
 | Interfaz | Gradio 6.32.0 |

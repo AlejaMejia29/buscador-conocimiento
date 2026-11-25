@@ -150,3 +150,36 @@ def test_conversacion_ajena_o_invalida_se_rechaza():
         almacen.comprobar_propietario(Vacio(), sesion, "no-es-un-uuid")
     with pytest.raises(AccesoDenegado):
         almacen.comprobar_propietario(Vacio(), sesion, "22222222-2222-2222-2222-222222222222")
+
+
+# --- Ajustes tras la prueba real de la app (C12) ----------------------------------
+def test_poema_se_rechaza_aunque_el_modelo_lo_escriba():
+    poema = "El mar susurra en la bruma,\ncon olas que danzan al compás."
+    s = sistema_con([decision(respuesta=poema)])
+    traza = asyncio.run(s.atender("Escríbeme un poema sobre el mar", cliente_supabase=None, historial=[]))
+    assert traza["estado"] == "RECHAZAR" and "poema" not in traza["respuesta"].lower()
+    assert any(e["etapa"] == "RESPUESTA_FUERA_DE_ALCANCE_BLOQUEADA" for e in traza["eventos"])
+
+
+def test_saludo_corto_sin_fuentes_se_permite():
+    s = sistema_con([decision(respuesta="¡Hola! Pregúntame por las políticas internas.")])
+    traza = asyncio.run(s.atender("Hola", cliente_supabase=None, historial=[]))
+    assert traza["estado"] == "RESPONDER"
+
+
+def test_vigencia_por_tema_usa_el_codigo_del_fragmento():
+    s = sistema_con([decision(accion="buscar_documentos", consulta="trabajo remoto"),
+                     decision(accion="consultar_estado_documento", codigo_documento="DOC-1002"),
+                     decision(respuesta="Hasta dos días [F1]; el documento está en revisión [T1].", citas=["F1", "T1"])])
+    traza = asyncio.run(s.atender("¿Cuántos días remotos puedo tener? ¿Ese documento está vigente?",
+                                  cliente_supabase=None, historial=[]))
+    assert traza["estado"] == "RESPONDER" and traza["citas"] == ["F1", "T1"]
+
+
+def test_aclarar_sobre_tema_del_corpus_sin_buscar_se_bloquea():
+    s = sistema_con([decision(accion="aclarar", respuesta="¿Qué documento?"),
+                     decision(accion="buscar_documentos", consulta="trabajo remoto"),
+                     decision(respuesta="Hasta dos días [F1].", citas=["F1"])])
+    traza = asyncio.run(s.atender("¿Cuántos días de trabajo remoto puedo tener?", cliente_supabase=None, historial=[]))
+    assert traza["estado"] == "RESPONDER"
+    assert any(e["etapa"] == "RESPUESTA_SIN_FUENTES_BLOQUEADA" for e in traza["eventos"])
