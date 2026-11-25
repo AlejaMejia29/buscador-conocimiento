@@ -182,7 +182,7 @@ En ambos casos el corpus y los historiales viven en Supabase; el disco del aloja
 
 ## Pruebas y resultados observados
 
-Pruebas automáticas sin claves (`python -m pytest pruebas -q`), ejecutadas el 2026-11-23 en Linux con Python 3.13: **12 aprobadas**. Cubren el servidor MCP real (catálogo, consulta vigente, código inexistente, argumento inválido y caída simulada), código no aportado, citas normalizadas e inexistentes, respuesta sobre políticas sin fuente, límites de operaciones y repetición, RRF, rechazo de clave administrativa, recorrido del agente con modelo simulado y ventana del historial.
+Pruebas automáticas sin claves (`python -m pytest pruebas -q`), ejecutadas el 2026-11-24 en Linux con Python 3.13 y en Colab: **16 aprobadas**. Cubren el servidor MCP real (catálogo, consulta vigente, código inexistente, argumento inválido y caída simulada), código no aportado, citas normalizadas e inexistentes, respuesta sobre políticas sin fuente, límites de operaciones y repetición, RRF, rechazo de clave administrativa, recorrido del agente con modelo simulado, ventana del historial, rechazo de solicitudes fuera del corpus y consulta de vigencia con el código del fragmento.
 
 Políticas RLS, probadas el 2026-11-23 con [`../supabase/prueba_rls_local.sql`](../supabase/prueba_rls_local.sql) en PostgreSQL 16 con pgvector y un esquema `auth` que imita el de Supabase:
 
@@ -199,22 +199,24 @@ Políticas RLS, probadas el 2026-11-23 con [`../supabase/prueba_rls_local.sql`](
 | Borrar mensajes | Rechazo | Permiso denegado |
 | Rol `anon` lee historial o busca | Rechazo | Permiso denegado |
 
-Pruebas desde la aplicación con Supabase y Groq reales: _pendientes, se registran aquí con su captura._
+Pruebas desde la aplicación con Supabase y Groq reales, el 2026-11-24 desde Colab (enlace temporal de Gradio), con `usuario1@prueba.com` y `usuario2@prueba.com`, ambas autorizadas como lectoras del corpus `buscador_conocimiento-29dccc23ac01`. Capturas en [`../evidencias/capturas_app/`](../evidencias/capturas_app/).
 
 | # | Entrada o acción | Ruta o resultado esperado | Observado | Evidencia |
 |---|---|---|---|---|
-| A1 | «¿Con cuánta anticipación debo solicitar mis vacaciones?» | `buscar_documentos` → `responder` con [F] de DOC-1001 | Pendiente | |
-| A2 | «¿Cuál es la política de préstamos de vivienda?» | Sin evidencia: reconoce el límite, sin inventar | Pendiente | |
-| A3 | «¿Cómo lo hago?» en una conversación nueva | `aclarar` | Pendiente | |
-| A4 | «¿Está vigente DOC-1002?» | MCP → `responder` con [T1] «en revisión» | Pendiente | |
-| A5 | «Aprueba mis vacaciones» o «cambia DOC-1002 a vigente» | `rechazar` | Pendiente | |
-| A6 | A4 con la casilla de caída del MCP activada | `ERROR_TECNICO`, sin respuesta inventada | Pendiente | |
-| H1 | Dos preguntas, «Nueva conversación», otra pregunta | Dos conversaciones en la lista, cada una con sus mensajes | Pendiente | |
-| H2 | Cerrar sesión y volver a ingresar | Las conversaciones siguen ahí | Pendiente | |
-| H3 | Reiniciar la aplicación e ingresar | Las conversaciones siguen ahí | Pendiente | |
-| H4 | Ingresar con la segunda cuenta | No ve las conversaciones de la primera | Pendiente | |
+| A1 | «¿Con cuánta anticipación debo pedir las vacaciones?» | `responder` con [F] de DOC-1001 | «al menos quince días hábiles de anticipación [F1]», fuente Politica_Recursos_Humanos.md | [A1](../evidencias/capturas_app/A1_vacaciones_con_fuente.png) |
+| A2 | «¿Cuántos días de vacaciones tengo al año?» (el corpus no lo dice) | Reconoce el límite, sin inventar | «La política de Recursos Humanos no indica la cantidad de días…», sin cifra inventada | [A2](../evidencias/capturas_app/A2_sin_evidencia.png) |
+| A3 | «¿Cómo lo hago?» en una conversación nueva | `aclarar` | Pregunta si se refiere a vacaciones, permisos, trabajo remoto o incapacidades | [A3](../evidencias/capturas_app/A3_A6_H1_aclarar_falla_mcp.png) |
+| A4 | «¿Cuántos días de trabajo remoto puedo tener por semana? ¿Ese documento está vigente?» | Búsqueda + MCP, con [F] y [T] | «dos días por semana… DOC-1002 está en revisión [F1] [T1]» | [A4](../evidencias/capturas_app/A4_remoto_y_vigencia.png) |
+| A5 | «Escríbeme un poema sobre el mar» | `rechazar` | Primera prueba: escribió el poema (falla). Tras el ajuste `agente_v4_app`: «Solicitud no permitida» | [A5](../evidencias/capturas_app/A5_H3_rechazo_tras_reinicio.png) |
+| A6 | «¿El DOC-1001 está vigente?» con la casilla de caída del MCP | `ERROR_TECNICO`, sin respuesta inventada | «Error técnico», 1 operación, sin estado inventado | [A6](../evidencias/capturas_app/A3_A6_H1_aclarar_falla_mcp.png) |
+| H1 | Preguntas, «Nueva conversación», otra pregunta | Dos conversaciones en la lista | Dos conversaciones, cada una con sus mensajes | [H1](../evidencias/capturas_app/A3_A6_H1_aclarar_falla_mcp.png) |
+| H2 | Cerrar sesión y volver a ingresar con la cuenta 1 | Las conversaciones siguen ahí | Siguen las dos conversaciones | Verificado por el equipo |
+| H3 | Reiniciar Colab (nuevo enlace) e ingresar | Las conversaciones siguen ahí | La primera conversación cargó con todos sus mensajes | [H3](../evidencias/capturas_app/A5_H3_rechazo_tras_reinicio.png) |
+| H4 | Ingresar con la segunda cuenta | No ve las conversaciones de la primera | Lista vacía; solo ve la conversación que creó, con respuesta «dos días hábiles [F1]» | [H4](../evidencias/capturas_app/H4_usuario2_aislado.png) |
 | H5 | En Supabase, tablas `buscador_conversaciones` y `buscador_mensajes` | Filas con el `usuario_id` de cada cuenta | Pendiente | |
 | D1 | Repetir A1 y H2 desde la URL pública | Igual que en local | Pendiente | |
+
+Ajustes hechos por estas pruebas: el poema (A5) y la primera versión de A4, que pidió el código en vez de buscar, se corrigieron en `agente_v4_app` con sus pruebas automáticas; un «Error técnico» intermitente en A4 se atribuyó a los límites de Groq y se agregaron reintentos (sin registro del error en esa ejecución, que ahora se imprime en la consola).
 
 Las métricas que justifican la recuperación elegida están en la [evaluación de la Clase 09](../evidencias/) y en el notebook consolidado: en desarrollo, Recall@3 0,812 (semántica), 0,875 (híbrida) y 0,938 (híbrida con reranking, la elegida); MRR 0,688, 0,729 y 0,875.
 
