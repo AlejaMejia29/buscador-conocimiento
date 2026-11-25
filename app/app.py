@@ -66,38 +66,100 @@ def opciones_conversaciones(conversaciones):
     return [(c["titulo"], c["id"]) for c in conversaciones]
 
 
+TEMA = gr.themes.Soft(
+    primary_hue=gr.themes.Color(c50="#FBF1EA", c100="#F6E0D0", c200="#EDC1A1", c300="#E09A68", c400="#CF7536",
+                                c500="#B5530E", c600="#9A4509", c700="#7E3907", c800="#622C06", c900="#472004", c950="#2E1502"),
+    neutral_hue="slate",
+    radius_size="md",
+    font=[gr.themes.GoogleFont("Public Sans"), "system-ui", "sans-serif"],
+).set(
+    body_background_fill="#F4F2EC",
+    block_background_fill="#FFFFFF",
+    block_border_color="#E4DFD3",
+    block_border_width="1px",
+    block_shadow="0 1px 2px rgba(20, 33, 61, 0.05)",
+    block_label_text_color="#5B6475",
+    block_label_background_fill="transparent",
+    block_title_text_color="#5B6475",
+    block_title_background_fill="transparent",
+    button_primary_background_fill="#B5530E",
+    button_primary_background_fill_hover="#9A4509",
+    button_primary_text_color="#FFFFFF",
+    button_secondary_background_fill="#FFFFFF",
+    button_secondary_background_fill_hover="#F6E0D0",
+    button_secondary_border_color="#E4DFD3",
+    button_secondary_text_color="#14213D",
+    input_background_fill="#FFFFFF",
+)
+
+CSS = """
+.gradio-container { width: 100% !important; max-width: 1180px !important; margin: 0 auto !important; padding: 24px 20px !important; }
+footer { display: none !important; }
+#encabezado { padding: 4px 4px 16px; border-bottom: 1px solid #E4DFD3; margin-bottom: 8px; }
+#encabezado h1 { font-size: 28px; color: #14213D; margin: 0 0 4px; letter-spacing: -0.01em; }
+#encabezado p { color: #5B6475; margin: 0; font-size: 15px; }
+#ingreso { max-width: 420px; margin: 40px auto 0 !important; padding: 28px !important; background: #FFFFFF;
+           border: 1px solid #E4DFD3; border-radius: 14px; box-shadow: 0 4px 16px rgba(20, 33, 61, 0.06); gap: 14px; }
+#ingreso .form, #ingreso .block { border: none !important; box-shadow: none !important; background: transparent !important; padding: 0 !important; }
+#ingreso h2 { font-size: 20px; color: #14213D; margin: 0; }
+#barra { align-items: center; padding: 4px 4px 8px; }
+#barra p { margin: 0; color: #5B6475; }
+#barra button { max-width: 150px; margin-left: auto; }
+#lateral { background: #FFFFFF; border: 1px solid #E4DFD3; border-radius: 14px; padding: 14px !important; gap: 12px; align-self: stretch; }
+#lista { border: none !important; box-shadow: none !important; padding: 0 !important; background: transparent !important; }
+#lista, #lista * { background-color: transparent !important; }
+#lateral .form, #lateral .block { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
+#lista .wrap { flex-direction: column; gap: 6px; }
+#lista > span, #lista [data-testid="block-info"] { font-weight: 600; color: #14213D !important; background: transparent !important; padding: 0 !important; }
+#lista label { width: 100%; margin: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid #E4DFD3;
+               background-color: #FFFFFF !important; font-size: 14px; line-height: 1.35; }
+#lista label.selected, #lista label:has(input:checked) { background-color: #FBF1EA !important; border-color: #E09A68 !important; }
+#lista label span, #lista label.selected span { color: #14213D !important; }
+#lista input[type=radio] { display: none; }
+#principal { gap: 12px; }
+#chat { border-radius: 14px !important; }
+#entrada { align-items: stretch; gap: 10px; }
+#entrada button { min-height: 48px; }
+#estado p { color: #5B6475; font-size: 13px; margin: 0 4px; }
+#fuentes blockquote { border-left: 3px solid #E09A68; margin: 6px 0 12px; padding: 4px 12px; color: #39425A; }
+"""
+
+
 def construir_interfaz(sistema: Sistema, almacen: Almacenamiento) -> gr.Blocks:
     with gr.Blocks(title="Buscador de conocimiento") as demo:
         sesion = gr.State(None)          # Sesion de Supabase Auth de este navegador
         conversacion = gr.State(None)    # id de la conversación activa
 
-        gr.Markdown("# Buscador de conocimiento\nPreguntas sobre las políticas internas, con la fuente de cada respuesta.")
+        gr.Markdown("# Buscador de conocimiento\nPreguntas sobre las políticas internas, con la fuente de cada respuesta.",
+                    elem_id="encabezado")
 
-        with gr.Column(visible=True) as panel_ingreso:
-            correo = gr.Textbox(label="Correo", max_lines=1)
+        with gr.Column(visible=True, elem_id="ingreso") as panel_ingreso:
+            gr.Markdown("## Ingresar")
+            correo = gr.Textbox(label="Correo", max_lines=1, placeholder="nombre@correo.com")
             contrasena = gr.Textbox(label="Contraseña", type="password", max_lines=1)
             boton_ingresar = gr.Button("Ingresar", variant="primary")
             aviso_ingreso = gr.Markdown()
 
         with gr.Column(visible=False) as panel_chat:
-            with gr.Row():
+            with gr.Row(elem_id="barra"):
                 usuario_activo = gr.Markdown()
-                boton_salir = gr.Button("Cerrar sesión", size="sm", scale=0)
-            with gr.Row():
-                with gr.Column(scale=1, min_width=220):
-                    boton_nueva = gr.Button("Nueva conversación")
-                    lista = gr.Radio(label="Mis conversaciones", choices=[], value=None)
-                with gr.Column(scale=3):
-                    chat = gr.Chatbot(label="Conversación", height=460)
-                    with gr.Row():
+                boton_salir = gr.Button("Cerrar sesión", size="sm", scale=0, min_width=130)
+            with gr.Row(equal_height=False):
+                with gr.Column(scale=1, min_width=240, elem_id="lateral"):
+                    boton_nueva = gr.Button("＋ Nueva conversación", variant="primary")
+                    lista = gr.Radio(label="Mis conversaciones", choices=[], value=None, elem_id="lista")
+                with gr.Column(scale=3, elem_id="principal"):
+                    chat = gr.Chatbot(label="Conversación", height=480, elem_id="chat", show_label=False,
+                                      placeholder="Escribe una pregunta sobre vacaciones, permisos, trabajo remoto o incapacidades.")
+                    with gr.Row(elem_id="entrada"):
                         pregunta = gr.Textbox(placeholder="Ej.: ¿Con cuánta anticipación pido vacaciones?",
-                                              show_label=False, max_lines=4, scale=5)
-                        boton_enviar = gr.Button("Enviar", variant="primary", scale=1)
+                                              show_label=False, max_lines=4, scale=5, container=False)
+                        boton_enviar = gr.Button("Enviar", variant="primary", scale=1, min_width=110)
                     simular = gr.Checkbox(label="Prueba: simular caída del servidor MCP",
-                                          value=False, visible=sistema.cfg.modo_pruebas)
-                    estado = gr.Markdown()
-                    with gr.Accordion("Fuentes de la última respuesta", open=True):
-                        fuentes = gr.Markdown()
+                                          value=False, visible=sistema.cfg.modo_pruebas, container=False)
+                    estado = gr.Markdown(elem_id="estado")
+                    with gr.Accordion("Fuentes de la última respuesta", open=False):
+                        fuentes = gr.Markdown(elem_id="fuentes")
 
         def salir_ui(mensaje=""):
             return (None, None, gr.update(visible=True), gr.update(visible=False), mensaje,
@@ -115,7 +177,7 @@ def construir_interfaz(sistema: Sistema, almacen: Almacenamiento) -> gr.Blocks:
             return (nueva, None, gr.update(visible=False), gr.update(visible=True), "",
                     gr.update(choices=opciones_conversaciones(conversaciones), value=None), [], "",
                     "Escribe una pregunta para empezar una conversación nueva.", "",
-                    f"Sesión de **{nueva.correo}**")
+                    f"Sesión de <b>{nueva.correo.replace('@', '&#64;')}</b>")
 
         boton_ingresar.click(ingresar, [correo, contrasena], [*salidas_ingreso, contrasena, usuario_activo])
         contrasena.submit(ingresar, [correo, contrasena], [*salidas_ingreso, contrasena, usuario_activo])
@@ -199,6 +261,7 @@ def main():
         server_name=os.environ.get("GRADIO_SERVER_NAME", "127.0.0.1"),
         server_port=int(os.environ.get("PORT", "7860")),
         share=os.environ.get("GRADIO_SHARE", "0") == "1",
+        theme=TEMA, css=CSS,
     )
 
 
