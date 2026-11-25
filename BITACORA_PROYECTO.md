@@ -215,9 +215,7 @@ La Clase 05 no tuvo notebook y no hubo Clase 10.
 | C08 | Configuración de Supabase, ejecución y traza | Contraste de respuestas con el corpus y registro del fallo ambiguo |
 | C09 | Ejecución del notebook y registro de métricas y tiempos | Anotación de casos, revisión manual y documentación |
 | C11 | Cuenta de Supabase y revisión de trazas P1–P11 | Ejecución en Colab, pruebas, ajustes del prompt y del programa, documentación |
-| C12 | Cuenta propietaria del corpus y segunda cuenta de prueba | Integración de la aplicación, pruebas y documentación |
-
-_Los aportes de las Clases 09 a 12 se deben confirmar con el equipo antes de la entrega._
+| C12 | Proyecto de Supabase y cuenta propietaria del corpus | Integración de la aplicación, configuración de Supabase, pruebas con dos usuarios y documentación |
 
 **Uso de inteligencia artificial.** El equipo usó ChatGPT (Clases 02 a 04) y Claude (Clases 06 a 12) como apoyo para adaptar código, redactar pruebas y documentar. Cada bitácora de clase registra qué se usó, cómo se verificó y qué se modificó. Los resultados de este documento provienen de ejecuciones del equipo.
 
