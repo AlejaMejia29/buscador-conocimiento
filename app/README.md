@@ -167,20 +167,36 @@ La consola muestra `Preparando modelos y servidor MCP (solo una vez)...` y luego
 
 ## Despliegue
 
-**URL pública:** _pendiente, se completa después del despliegue._
+**Estado (2026-11-24):** la aplicación no tiene una URL permanente. Se ejecutó y se probó desde una URL pública temporal de Gradio (`*.gradio.live`) lanzada desde Colab con [`Probar_en_Colab.ipynb`](Probar_en_Colab.ipynb). Todas las pruebas de la sección siguiente se hicieron desde esa URL, con Supabase y Groq reales. El enlace dura hasta una semana y solo mientras la celda de Colab esté en ejecución.
 
-**Hugging Face Spaces (el que usamos).** El plan gratuito de Render tiene 512 MB de RAM y no alcanza para PyTorch con el modelo de embeddings y el reranker. Un Space gratuito de Hugging Face (CPU básica, 16 GB) sí, y está pensado para Gradio.
+**Por qué no hay URL permanente (bloqueo registrado):**
 
-Con [`Desplegar_en_HF.ipynb`](Desplegar_en_HF.ipynb) (Colab) los pasos 1 a 3 se hacen solos: crea el Space, configura variables y secretos desde los Secretos de Colab (más `HF_TOKEN` con permiso Write) y sube los archivos. A mano:
+| Alojamiento | Resultado |
+|---|---|
+| Render, plan gratuito | 512 MB de RAM. La aplicación necesita unos 2 GB para PyTorch, el modelo de embeddings y el reranker, así que no arranca. El plan con 2 GB es de pago. |
+| Hugging Face Spaces | Desde noviembre de 2026 publicar un Space de Gradio exige el plan PRO. Respuesta del servidor al crear el Space: `402 Payment Required … hosting Gradio and Docker Spaces on free cpu-basic requires a PRO subscription`. |
+| Netlify | Solo sirve sitios estáticos; no ejecuta un servidor Python. |
+| Google Cloud Run | Funciona dentro del nivel gratuito, pero exige registrar una tarjeta en la cuenta de facturación. Dejamos la imagen lista (abajo). |
 
-1. En <https://huggingface.co/new-space>, crear un Space con SDK **Gradio** y hardware **CPU basic**.
-2. Subir a la raíz del Space los archivos de `app/`: `app.py`, `sistema.py`, `almacenamiento.py`, `servidor_mcp.py` y `requirements.txt`, y el `README.md` de [`despliegue_hf/`](despliegue_hf/README.md) (fija Python 3.12 y la versión de Gradio).
-3. En **Settings → Variables and secrets**, crear como *secrets* `GROQ_API_KEY` y `SUPABASE_PUBLISHABLE_KEY`, y como *variables* `SUPABASE_URL`, `CORPUS_ID`, `CORPUS_PROPIETARIO_ID`, `EMBEDDINGS_REVISION` y `GRADIO_SERVER_NAME=0.0.0.0`.
-4. Esperar el estado *Running* y probar desde la URL del Space los casos de la sección de pruebas.
+**Cómo publicarla con una URL permanente cuando haya un alojamiento disponible.**
 
-**Render (alternativa documentada por la guía).** Web Service conectado al repositorio con **Root Directory `app`**, **Build Command `pip install -r requirements.txt`**, **Start Command `python app.py`**, las mismas variables en *Environment* y `GRADIO_SERVER_NAME=0.0.0.0` (la aplicación lee `PORT`). Necesita una instancia con al menos 2 GB de RAM, que no es gratuita.
+*Google Cloud Run* (desde Cloud Shell en el navegador, con [`Dockerfile`](Dockerfile)):
 
-En ambos casos el corpus y los historiales viven en Supabase; el disco del alojamiento no guarda nada que haya que conservar.
+```bash
+git clone https://github.com/AlejaMejia29/buscador-conocimiento
+cd buscador-conocimiento/app
+gcloud run deploy buscador-conocimiento --source . --region us-central1 \
+  --memory 4Gi --cpu 2 --max-instances 1 --allow-unauthenticated \
+  --set-env-vars SUPABASE_URL=...,CORPUS_ID=buscador_conocimiento-29dccc23ac01,CORPUS_PROPIETARIO_ID=...,EMBEDDINGS_REVISION=e8f8c211226b894fcb81acc59f3b34ba3efd5f42,GROQ_API_KEY=...,SUPABASE_PUBLISHABLE_KEY=...
+```
+
+`--max-instances 1` mantiene cada sesión de Gradio en el mismo contenedor. Las claves conviene pasarlas con Secret Manager (`--set-secrets`) en lugar de `--set-env-vars`.
+
+*Hugging Face Spaces con plan PRO:* [`Desplegar_en_HF.ipynb`](Desplegar_en_HF.ipynb) crea el Space, configura variables y secretos desde los Secretos de Colab (más `HF_TOKEN` con permiso Write) y sube los archivos de `app/` con el `README.md` de [`despliegue_hf/`](despliegue_hf/README.md).
+
+*Render con una instancia de al menos 2 GB:* Web Service con **Root Directory `app`**, **Build Command `pip install -r requirements.txt`**, **Start Command `python app.py`**, las mismas variables en *Environment* y `GRADIO_SERVER_NAME=0.0.0.0` (la aplicación lee `PORT`).
+
+En todos los casos el corpus y los historiales viven en Supabase; el disco del alojamiento no guarda nada que haya que conservar. Por eso el historial se recuperó igual después de reiniciar Colab (prueba H3).
 
 ## Pruebas y resultados observados
 
@@ -216,7 +232,7 @@ Pruebas desde la aplicación con Supabase y Groq reales, el 2026-11-24 desde Col
 | H3 | Reiniciar Colab (nuevo enlace) e ingresar | Las conversaciones siguen ahí | La primera conversación cargó con todos sus mensajes | [H3](../evidencias/capturas_app/A5_H3_rechazo_tras_reinicio.png) |
 | H4 | Ingresar con la segunda cuenta | No ve las conversaciones de la primera | Lista vacía; solo ve la conversación que creó, con respuesta «dos días hábiles [F1]» | [H4](../evidencias/capturas_app/H4_usuario2_aislado.png) |
 | H5 | En Supabase, conversaciones y mensajes por cuenta | Filas con el `usuario_id` de cada cuenta | usuario1: 2 conversaciones, 22 mensajes; usuario2: 1 conversación, 2 mensajes | [H5](../evidencias/capturas_app/H5_filas_por_usuario_supabase.png) |
-| D1 | Repetir A1 y H2 desde la URL pública | Igual que en local | Pendiente | |
+| D1 | Pruebas desde una URL pública | Igual que en local | Todas las pruebas A y H se hicieron desde la URL pública temporal de Gradio; no hay URL permanente (ver Despliegue) | Esta tabla |
 
 Ajustes hechos por estas pruebas: el poema (A5) y la primera versión de A4, que pidió el código en vez de buscar, se corrigieron en `agente_v4_app` con sus pruebas automáticas; un «Error técnico» intermitente en A4 se atribuyó a los límites de Groq y se agregaron reintentos (sin registro del error en esa ejecución, que ahora se imprime en la consola).
 

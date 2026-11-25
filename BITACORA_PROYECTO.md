@@ -117,7 +117,7 @@ La Clase 05 no tuvo notebook y no hubo Clase 10.
 | Identidad | Supabase Auth; un cliente nuevo por solicitud con `set_session`, que valida el token con el servidor | El `usuario_id` sale de Auth, no del navegador. No existe un cliente global mutable. | Una cuenta única en `.env` para todos | C12 |
 | Historial | Tablas `buscador_conversaciones` y `buscador_mensajes` con RLS; se guardan todos los mensajes y al modelo se envían los últimos 4 turnos | Persistir y elegir el contexto son decisiones distintas; 4 turnos fue la ventana probada en la Clase 11. | `gr.State` o SQLite como historial | C12 |
 | Acceso al corpus | El corpus sigue siendo del propietario; otras cuentas lo leen solo si están en `buscador_corpus_lectores` | La guía pide autorizar explícitamente y no desactivar RLS. La autorización no da acceso a historiales. | Hacer el corpus legible para todos | C12 |
-| Despliegue | Hugging Face Spaces (CPU básica gratuita, 16 GB) | Render gratuito tiene 512 MB y no alcanza para PyTorch con dos modelos. Render queda documentado como alternativa de pago. | Render gratuito | C12 |
+| Despliegue | URL pública temporal de Gradio desde Colab; `Dockerfile` listo para Cloud Run | Hugging Face pasó a cobrar los Spaces de Gradio (402) y Render gratuito tiene 512 MB, que no alcanzan para PyTorch con dos modelos. Cloud Run pide tarjeta. | Hugging Face Spaces, Render gratuito | C12 |
 
 ---
 
@@ -156,7 +156,7 @@ La Clase 05 no tuvo notebook y no hubo Clase 10.
 | 2026-11-23 | Recorrido de la interfaz con dos usuarios simulados | Gradio 6.32 con almacenamiento y modelo simulados | Ingreso, dos conversaciones, recuperación, aislamiento | Contraseña errónea rechazada; dos conversaciones separadas; la segunda cuenta no pudo abrir la conversación de la primera; sin sesión no se envía | Registro del equipo |
 | 2026-11-24 | Pruebas desde la aplicación con Supabase y Groq reales (A1–A6, H1–H4) | Colab con enlace temporal de Gradio, dos cuentas lectoras del corpus `buscador_conocimiento-29dccc23ac01` | Rutas y aislamiento esperados | Todas pasan tras dos ajustes: A5 (escribió un poema) y A4 (pidió el código en vez de buscar) se corrigieron en `agente_v4_app`; un error técnico intermitente llevó a agregar reintentos a Groq. Historial recuperado tras cerrar sesión y tras reiniciar; la segunda cuenta no ve nada de la primera | [tabla](app/README.md#pruebas-y-resultados-observados), [capturas](evidencias/capturas_app/) |
 | 2026-11-24 | Filas por usuario en Supabase (H5) | Consulta en el SQL Editor | Cada conversación con el `usuario_id` de su cuenta | usuario1: 2 conversaciones y 22 mensajes; usuario2: 1 y 2 | [captura](evidencias/capturas_app/H5_filas_por_usuario_supabase.png) |
-| Pendiente | Pruebas desde la URL pública (D1) | Hugging Face Spaces | | Pendiente | |
+| 2026-11-24 | Despliegue con URL permanente (D1) | Hugging Face Spaces, Render, Netlify, Cloud Run | URL pública estable | Bloqueado: HF exige PRO para Gradio (402), Render gratis no alcanza (512 MB), Netlify es estático, Cloud Run pide tarjeta. Las pruebas se hicieron desde la URL temporal de Gradio | [Despliegue](app/README.md#despliegue) |
 
 ---
 
