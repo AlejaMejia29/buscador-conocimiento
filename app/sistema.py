@@ -445,7 +445,7 @@ class Sistema:
 
         sistema = cls(cfg=cfg, recuperador=Recuperador(cfg))
         asyncio.run(sistema.mcp.descubrir())
-        sistema.groq = AsyncGroq(api_key=cfg.groq_api_key, timeout=25, max_retries=0)
+        sistema.groq = AsyncGroq(api_key=cfg.groq_api_key, timeout=25, max_retries=2)  # reintenta límites de uso (429)
         return sistema
 
     async def decidir(self, texto, historial, observaciones):
@@ -454,11 +454,20 @@ class Sistema:
             "herramienta_mcp": self.mcp.catalogo, "observaciones_del_turno": observaciones}, ensure_ascii=False)
         if len(contexto) > MAX_CONTEXTO_CARACTERES:
             raise Detencion("LIMITE_CONTEXTO")
-        salida = await self.groq.chat.completions.create(model=self.cfg.groq_model,
-            messages=[{"role": "system", "content": PROMPT_AGENTE}, {"role": "user", "content": contexto}],
-            temperature=0, reasoning_effort="low", max_completion_tokens=1536,
-            response_format={"type": "json_schema", "json_schema": {
-                "name": "decision_agente", "strict": True, "schema": Decision.model_json_schema()}})
+        from groq import BadRequestError
+
+        for intento in range(2):
+            try:
+                salida = await self.groq.chat.completions.create(model=self.cfg.groq_model,
+                    messages=[{"role": "system", "content": PROMPT_AGENTE}, {"role": "user", "content": contexto}],
+                    temperature=0, reasoning_effort="low", max_completion_tokens=1536,
+                    response_format={"type": "json_schema", "json_schema": {
+                        "name": "decision_agente", "strict": True, "schema": Decision.model_json_schema()}})
+                break
+            except BadRequestError:
+                # Groq devuelve 400 cuando la salida no cumple el esquema (json_validate_failed): un reintento.
+                if intento:
+                    raise
         opcion = salida.choices[0]
         if opcion.finish_reason != "stop" or getattr(opcion.message, "refusal", None):
             raise ValueError("La generación fue rechazada o quedó incompleta.")
@@ -540,6 +549,7 @@ class Sistema:
         except (ValueError, ValidationError):
             traza.update(estado="ERROR_VALIDACION", respuesta=MENSAJES_ESTADO["ERROR_VALIDACION"])
         except Exception as error:
+            print(f"[ERROR_TECNICO] {type(error).__name__}: {str(error)[:300]}", flush=True)
             traza.update(estado="ERROR_TECNICO", respuesta=MENSAJES_ESTADO["ERROR_TECNICO"],
                          tipo_error=type(error).__name__)
         traza["operaciones"] = operaciones
