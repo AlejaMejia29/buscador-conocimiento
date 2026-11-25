@@ -171,6 +171,8 @@ La consola muestra `Preparando modelos y servidor MCP (solo una vez)...` y luego
 
 **Hugging Face Spaces (el que usamos).** El plan gratuito de Render tiene 512 MB de RAM y no alcanza para PyTorch con el modelo de embeddings y el reranker. Un Space gratuito de Hugging Face (CPU básica, 16 GB) sí, y está pensado para Gradio.
 
+Con [`Desplegar_en_HF.ipynb`](Desplegar_en_HF.ipynb) (Colab) los pasos 1 a 3 se hacen solos: crea el Space, configura variables y secretos desde los Secretos de Colab (más `HF_TOKEN` con permiso Write) y sube los archivos. A mano:
+
 1. En <https://huggingface.co/new-space>, crear un Space con SDK **Gradio** y hardware **CPU basic**.
 2. Subir a la raíz del Space los archivos de `app/`: `app.py`, `sistema.py`, `almacenamiento.py`, `servidor_mcp.py` y `requirements.txt`, y el `README.md` de [`despliegue_hf/`](despliegue_hf/README.md) (fija Python 3.12 y la versión de Gradio).
 3. En **Settings → Variables and secrets**, crear como *secrets* `GROQ_API_KEY` y `SUPABASE_PUBLISHABLE_KEY`, y como *variables* `SUPABASE_URL`, `CORPUS_ID`, `CORPUS_PROPIETARIO_ID`, `EMBEDDINGS_REVISION` y `GRADIO_SERVER_NAME=0.0.0.0`.
@@ -213,7 +215,7 @@ Pruebas desde la aplicación con Supabase y Groq reales, el 2026-11-24 desde Col
 | H2 | Cerrar sesión y volver a ingresar con la cuenta 1 | Las conversaciones siguen ahí | Siguen las dos conversaciones | Verificado por el equipo |
 | H3 | Reiniciar Colab (nuevo enlace) e ingresar | Las conversaciones siguen ahí | La primera conversación cargó con todos sus mensajes | [H3](../evidencias/capturas_app/A5_H3_rechazo_tras_reinicio.png) |
 | H4 | Ingresar con la segunda cuenta | No ve las conversaciones de la primera | Lista vacía; solo ve la conversación que creó, con respuesta «dos días hábiles [F1]» | [H4](../evidencias/capturas_app/H4_usuario2_aislado.png) |
-| H5 | En Supabase, tablas `buscador_conversaciones` y `buscador_mensajes` | Filas con el `usuario_id` de cada cuenta | Pendiente | |
+| H5 | En Supabase, conversaciones y mensajes por cuenta | Filas con el `usuario_id` de cada cuenta | usuario1: 2 conversaciones, 22 mensajes; usuario2: 1 conversación, 2 mensajes | [H5](../evidencias/capturas_app/H5_filas_por_usuario_supabase.png) |
 | D1 | Repetir A1 y H2 desde la URL pública | Igual que en local | Pendiente | |
 
 Ajustes hechos por estas pruebas: el poema (A5) y la primera versión de A4, que pidió el código en vez de buscar, se corrigieron en `agente_v4_app` con sus pruebas automáticas; un «Error técnico» intermitente en A4 se atribuyó a los límites de Groq y se agregaron reintentos (sin registro del error en esa ejecución, que ahora se imprime en la consola).
