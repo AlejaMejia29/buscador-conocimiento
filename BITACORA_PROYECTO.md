@@ -158,6 +158,42 @@ La Clase 05 no tuvo notebook y no hubo Clase 10.
 | 2026-11-24 | Filas por usuario en Supabase (H5) | Consulta en el SQL Editor | Cada conversación con el `usuario_id` de su cuenta | usuario1: 2 conversaciones y 22 mensajes; usuario2: 1 y 2 | [captura](evidencias/capturas_app/H5_filas_por_usuario_supabase.png) |
 | 2026-11-24 | Despliegue con URL permanente (D1) | Hugging Face Spaces, Render, Netlify, Cloud Run | URL pública estable | Bloqueado: HF exige PRO para Gradio (402), Render gratis no alcanza (512 MB), Netlify es estático, Cloud Run pide tarjeta. Las pruebas se hicieron desde la URL temporal de Gradio | [Despliegue](app/README.md#despliegue) |
 
+### Evidencia de la aplicación (2026-11-24)
+
+Capturas de la aplicación real, con Supabase y Groq, ejecutada desde Colab con el enlace público temporal de Gradio. Detalle de cada prueba en [`app/README.md`](app/README.md#pruebas-y-resultados-observados).
+
+**Pruebas automáticas en Colab (16 aprobadas en la versión final; la captura es de la primera ejecución, con 12).**
+
+![Pruebas automáticas en Colab](evidencias/capturas_app/colab_pruebas.png)
+
+**A1. Respuesta con fuente.** «¿Con cuánta anticipación debo pedir las vacaciones?» → quince días hábiles, con la cita [F1] de la Política de Recursos Humanos.
+
+![A1 respuesta con fuente](evidencias/capturas_app/A1_vacaciones_con_fuente.png)
+
+**A2. Sin evidencia.** «¿Cuántos días de vacaciones tengo al año?» → el corpus no lo dice y el sistema no inventa una cifra.
+
+![A2 sin evidencia](evidencias/capturas_app/A2_sin_evidencia.png)
+
+**A3, A6 y H1. Aclaración, caída del MCP y dos conversaciones.** «¿Cómo lo hago?» pide aclaración; con la caída del MCP simulada responde «Error técnico» sin inventar el estado; a la izquierda, las dos conversaciones del usuario.
+
+![A3 A6 H1](evidencias/capturas_app/A3_A6_H1_aclarar_falla_mcp.png)
+
+**A4. Trabajo remoto y vigencia.** Busca en la Política de Permisos [F1], consulta la herramienta MCP [T1] y avisa que DOC-1002 está en revisión.
+
+![A4 remoto y vigencia](evidencias/capturas_app/A4_remoto_y_vigencia.png)
+
+**A5 y H3. Rechazo y recuperación tras reiniciar.** Con un enlace nuevo (aplicación reiniciada) la conversación anterior cargó completa, y el poema se rechazó con `agente_v4_app`.
+
+![A5 H3](evidencias/capturas_app/A5_H3_rechazo_tras_reinicio.png)
+
+**H4. Aislamiento entre usuarios.** La segunda cuenta solo ve su propia conversación.
+
+![H4 usuario 2 aislado](evidencias/capturas_app/H4_usuario2_aislado.png)
+
+**H5. Historial guardado por usuario en Supabase.** usuario1: 2 conversaciones y 22 mensajes; usuario2: 1 conversación y 2 mensajes.
+
+![H5 filas por usuario](evidencias/capturas_app/H5_filas_por_usuario_supabase.png)
+
 ---
 
 ## 6. Errores, correcciones y limitaciones
