@@ -122,7 +122,7 @@ class Recuperador:
         if self.ligera:
             from fastembed import TextEmbedding
 
-            self.modelo_embeddings = TextEmbedding(MODELO_EMBEDDINGS, threads=1)
+            self.modelo_embeddings = TextEmbedding(MODELO_EMBEDDINGS, threads=1, enable_cpu_mem_arena=False)
             if len(self._vector("consulta de preparación")) != 384:
                 raise ValueError("La dimensión no corresponde al índice de Supabase.")
             self.reranker = None
