@@ -115,15 +115,26 @@ class Recuperador:
     """Modelos cargados una vez al arrancar; el corpus se lee con el cliente de quien pregunta."""
 
     def __init__(self, cfg: Configuracion):
-        from sentence_transformers import CrossEncoder, SentenceTransformer
-
         self.cfg = cfg
-        self.modelo_embeddings = SentenceTransformer(MODELO_EMBEDDINGS, revision=cfg.embeddings_revision, device="cpu")
-        if self.modelo_embeddings.get_sentence_embedding_dimension() != 384:
-            raise ValueError("La dimensión no corresponde al índice de Supabase.")
-        self.modelo_embeddings.encode("consulta de preparación", normalize_embeddings=True)
-        self.reranker = CrossEncoder(MODELO_RERANKER, revision=REVISION_RERANKER, device="cpu", max_length=512)
-        self.reranker.predict([("vacaciones", "Las vacaciones se solicitan con anticipación.")], show_progress_bar=False)
+        # RECUPERACION=ligera: para alojamientos con 512 MB (Render gratis). Mismo modelo de embeddings
+        # en ONNX cuantizado (fastembed, sin PyTorch) y sin reranker: opción B de la Clase 09.
+        self.ligera = os.environ.get("RECUPERACION", "completa").strip().lower() == "ligera"
+        if self.ligera:
+            from fastembed import TextEmbedding
+
+            self.modelo_embeddings = TextEmbedding(MODELO_EMBEDDINGS, threads=1)
+            if len(self._vector("consulta de preparación")) != 384:
+                raise ValueError("La dimensión no corresponde al índice de Supabase.")
+            self.reranker = None
+        else:
+            from sentence_transformers import CrossEncoder, SentenceTransformer
+
+            self.modelo_embeddings = SentenceTransformer(MODELO_EMBEDDINGS, revision=cfg.embeddings_revision, device="cpu")
+            if self.modelo_embeddings.get_sentence_embedding_dimension() != 384:
+                raise ValueError("La dimensión no corresponde al índice de Supabase.")
+            self.modelo_embeddings.encode("consulta de preparación", normalize_embeddings=True)
+            self.reranker = CrossEncoder(MODELO_RERANKER, revision=REVISION_RERANKER, device="cpu", max_length=512)
+            self.reranker.predict([("vacaciones", "Las vacaciones se solicitan con anticipación.")], show_progress_bar=False)
         self._corpus = None          # fragmentos, por_id, tokens y BM25 (solo lectura una vez cargados)
         self._candado = threading.Lock()
 
@@ -165,13 +176,22 @@ class Recuperador:
         orden = sorted(range(len(candidatos)), key=lambda i: (-puntajes[i], candidatos[i]["chunk_id"]))
         return [dict(candidatos[i], puntaje_reranker=puntajes[i]) for i in orden]
 
-    def buscar(self, consulta, cliente):
-        """La búsqueda semántica va a Supabase con la sesión del usuario: RLS decide si puede leer."""
-        cfg = self.cfg
+    def _vector(self, consulta):
+        if self.ligera:
+            vector = [float(x) for x in next(iter(self.modelo_embeddings.embed([consulta])))]
+            norma = math.sqrt(sum(x * x for x in vector))
+            if not norma or not all(math.isfinite(x) for x in vector):
+                raise ValueError("El modelo de embeddings devolvió un vector inválido.")
+            return [x / norma for x in vector]
         modelo = self.modelo_embeddings
         if len(modelo.tokenizer.encode(consulta, truncation=False)) > modelo.max_seq_length:
             raise ValueError("La consulta excede el límite del modelo de embeddings.")
-        vector = modelo.encode(consulta, normalize_embeddings=True).tolist()
+        return modelo.encode(consulta, normalize_embeddings=True).tolist()
+
+    def buscar(self, consulta, cliente):
+        """La búsqueda semántica va a Supabase con la sesión del usuario: RLS decide si puede leer."""
+        cfg = self.cfg
+        vector = self._vector(consulta)
         semanticos = cliente.rpc("buscador_buscar_fragmentos", {
             "query_embedding": vector, "p_owner_id": cfg.corpus_propietario_id,
             "p_corpus_id": cfg.corpus_id, "p_modelo": MODELO_EMBEDDINGS,
@@ -199,7 +219,10 @@ class Recuperador:
         coincidencias = [i for i, palabras in enumerate(corpus["tokens"]) if conjunto.intersection(palabras)]
         orden = sorted(coincidencias, key=lambda i: (-puntajes[i], fragmentos[i]["chunk_id"]))[:M]
         hibridos = fusionar_rrf(semanticos, [fragmentos[i] for i in orden])[:M]
-        seleccion = self.reordenar(consulta, hibridos)[:K]
+        if self.reranker is None:
+            seleccion = [dict(r, puntaje_reranker=r["rrf"]) for r in hibridos[:K]]
+        else:
+            seleccion = self.reordenar(consulta, hibridos)[:K]
         return [{"chunk_id": r["chunk_id"], "texto": r["content"], "fuente": r["metadata"],
                  "puntaje_reranker": round(r["puntaje_reranker"], 4)} for r in seleccion]
 
