@@ -1,11 +1,11 @@
-# Probado con Python 3.12 y 3.13. Mismas versiones de los notebooks de las Clases 09 y 11,
-# más Gradio para la interfaz y python-dotenv para leer app/.env.
+# Rama render: versión liviana para Render gratis (512 MB). Usa fastembed (ONNX, sin PyTorch)
+# en lugar de sentence-transformers; se activa con RECUPERACION=ligera.
 gradio==6.32.0
 mcp==2.3.0
 groq==1.7.0
 pydantic==2.13.5
 supabase==2.32.0
-sentence-transformers==6.1.0
+fastembed==0.9.1
 rank-bm25==0.2.2
 python-dotenv==1.2.4
 pytest==9.2.0

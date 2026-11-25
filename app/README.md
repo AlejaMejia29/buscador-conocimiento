@@ -167,6 +167,20 @@ La consola muestra `Preparando modelos y servidor MCP (solo una vez)...` y luego
 
 ## Despliegue
 
+### Render gratis (rama `render`)
+
+La rama `render` permite intentar el plan gratuito de Render (512 MB). Con `RECUPERACION=ligera` la aplicación usa el mismo modelo de embeddings en ONNX cuantizado (fastembed, sin PyTorch) y omite el reranker, es decir, la opción B de la Clase 09 (Recall@3 de desarrollo 0,875; en reserva B y C empataron). Los embeddings del corpus en Supabase no cambian.
+
+| Campo en Render | Valor |
+|---|---|
+| Branch | `render` |
+| Root Directory | `app` |
+| Build Command | `pip install -r requirements.txt` |
+| Start Command | `python app.py` |
+| Variables | `GROQ_API_KEY`, `GROQ_MODEL`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `CORPUS_ID`, `CORPUS_PROPIETARIO_ID`, `EMBEDDINGS_REVISION`, `GRADIO_SERVER_NAME=0.0.0.0`, `RECUPERACION=ligera`, `PYTHON_VERSION=3.12.8` |
+
+El plan gratuito se duerme tras 15 minutos sin visitas; la primera visita tarda alrededor de un minuto en despertar.
+
 **Estado (2026-11-24):** la aplicación no tiene una URL permanente. Se ejecutó y se probó desde una URL pública temporal de Gradio (`*.gradio.live`) lanzada desde Colab con [`Probar_en_Colab.ipynb`](Probar_en_Colab.ipynb). Todas las pruebas de la sección siguiente se hicieron desde esa URL, con Supabase y Groq reales. El enlace dura hasta una semana y solo mientras la celda de Colab esté en ejecución.
 
 **Por qué no hay URL permanente (bloqueo registrado):**
