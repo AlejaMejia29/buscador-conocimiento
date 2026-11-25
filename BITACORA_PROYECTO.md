@@ -154,8 +154,8 @@ La Clase 05 no tuvo notebook y no hubo Clase 10.
 | 2026-11-23 | Pruebas automáticas de la aplicación sin claves | Python 3.13, `pytest` | 12 casos | 12 aprobadas: MCP real, contratos, límites, citas, bloqueo de respuestas sin fuente, falla del MCP, ventana del historial | [salida](evidencias/pruebas_app_sin_claves.txt), [`app/pruebas/`](app/pruebas/test_controles.py) |
 | 2026-11-23 | Políticas RLS de corpus e historial | PostgreSQL 16 + pgvector con un esquema `auth` simulado | Cada cuenta solo ve lo suyo; el corpus solo lo leen las autorizadas | Todos los casos como se esperaba (ver tabla de `app/README.md`) | [script](supabase/prueba_rls_local.sql), [salida](evidencias/prueba_rls_local.txt) |
 | 2026-11-23 | Recorrido de la interfaz con dos usuarios simulados | Gradio 6.32 con almacenamiento y modelo simulados | Ingreso, dos conversaciones, recuperación, aislamiento | Contraseña errónea rechazada; dos conversaciones separadas; la segunda cuenta no pudo abrir la conversación de la primera; sin sesión no se envía | Registro del equipo |
-| 2026-11-24 | Pruebas desde la aplicación con Supabase y Groq reales (A1–A6, H1–H4) | Colab con enlace temporal de Gradio, dos cuentas lectoras del corpus `buscador_conocimiento-29dccc23ac01` | Rutas y aislamiento esperados | Todas pasan tras dos ajustes: A5 (escribió un poema) y A4 (pidió el código en vez de buscar) se corrigieron en `agente_v4_app`; un error técnico intermitente llevó a agregar reintentos a Groq. Historial recuperado tras cerrar sesión y tras reiniciar; la segunda cuenta no ve nada de la primera | [tabla](app/README.md#pruebas-y-resultados-observados), [capturas](evidencias/capturas_app/) |
-| 2026-11-24 | Filas por usuario en Supabase (H5) | Consulta en el SQL Editor | Cada conversación con el `usuario_id` de su cuenta | usuario1: 2 conversaciones y 22 mensajes; usuario2: 1 y 2 | [captura](evidencias/capturas_app/H5_filas_por_usuario_supabase.png) |
+| 2026-11-24 | Pruebas desde la aplicación con Supabase y Groq reales (A1–A6, H1–H4) | Colab con enlace temporal de Gradio, dos cuentas lectoras del corpus `buscador_conocimiento-29dccc23ac01` | Rutas y aislamiento esperados | Todas pasan tras dos ajustes: A5 (escribió un poema) y A4 (pidió el código en vez de buscar) se corrigieron en `agente_v4_app`; un error técnico intermitente llevó a agregar reintentos a Groq. Historial recuperado tras cerrar sesión y tras reiniciar; la segunda cuenta no ve nada de la primera | [tabla](app/README.md#pruebas-y-resultados-observados), [capturas](https://raw.githubusercontent.com/AlejaMejia29/buscador-conocimiento/main/evidencias/capturas_app/) |
+| 2026-11-24 | Filas por usuario en Supabase (H5) | Consulta en el SQL Editor | Cada conversación con el `usuario_id` de su cuenta | usuario1: 2 conversaciones y 22 mensajes; usuario2: 1 y 2 | [captura](https://raw.githubusercontent.com/AlejaMejia29/buscador-conocimiento/main/evidencias/capturas_app/H5_filas_por_usuario_supabase.png) |
 | 2026-11-24 | Despliegue con URL permanente (D1) | Hugging Face Spaces, Render, Netlify, Cloud Run | URL pública estable | Bloqueado: HF exige PRO para Gradio (402), Render gratis no alcanza (512 MB), Netlify es estático, Cloud Run pide tarjeta. Las pruebas se hicieron desde la URL temporal de Gradio | [Despliegue](app/README.md#despliegue) |
 
 ### Evidencia de la aplicación (2026-11-24)
@@ -164,35 +164,35 @@ Capturas de la aplicación real, con Supabase y Groq, ejecutada desde Colab con 
 
 **Pruebas automáticas en Colab (16 aprobadas en la versión final; la captura es de la primera ejecución, con 12).**
 
-![Pruebas automáticas en Colab](evidencias/capturas_app/colab_pruebas.png)
+![Pruebas automáticas en Colab](https://raw.githubusercontent.com/AlejaMejia29/buscador-conocimiento/main/evidencias/capturas_app/colab_pruebas.png)
 
 **A1. Respuesta con fuente.** «¿Con cuánta anticipación debo pedir las vacaciones?» → quince días hábiles, con la cita [F1] de la Política de Recursos Humanos.
 
-![A1 respuesta con fuente](evidencias/capturas_app/A1_vacaciones_con_fuente.png)
+![A1 respuesta con fuente](https://raw.githubusercontent.com/AlejaMejia29/buscador-conocimiento/main/evidencias/capturas_app/A1_vacaciones_con_fuente.png)
 
 **A2. Sin evidencia.** «¿Cuántos días de vacaciones tengo al año?» → el corpus no lo dice y el sistema no inventa una cifra.
 
-![A2 sin evidencia](evidencias/capturas_app/A2_sin_evidencia.png)
+![A2 sin evidencia](https://raw.githubusercontent.com/AlejaMejia29/buscador-conocimiento/main/evidencias/capturas_app/A2_sin_evidencia.png)
 
 **A3, A6 y H1. Aclaración, caída del MCP y dos conversaciones.** «¿Cómo lo hago?» pide aclaración; con la caída del MCP simulada responde «Error técnico» sin inventar el estado; a la izquierda, las dos conversaciones del usuario.
 
-![A3 A6 H1](evidencias/capturas_app/A3_A6_H1_aclarar_falla_mcp.png)
+![A3 A6 H1](https://raw.githubusercontent.com/AlejaMejia29/buscador-conocimiento/main/evidencias/capturas_app/A3_A6_H1_aclarar_falla_mcp.png)
 
 **A4. Trabajo remoto y vigencia.** Busca en la Política de Permisos [F1], consulta la herramienta MCP [T1] y avisa que DOC-1002 está en revisión.
 
-![A4 remoto y vigencia](evidencias/capturas_app/A4_remoto_y_vigencia.png)
+![A4 remoto y vigencia](https://raw.githubusercontent.com/AlejaMejia29/buscador-conocimiento/main/evidencias/capturas_app/A4_remoto_y_vigencia.png)
 
 **A5 y H3. Rechazo y recuperación tras reiniciar.** Con un enlace nuevo (aplicación reiniciada) la conversación anterior cargó completa, y el poema se rechazó con `agente_v4_app`.
 
-![A5 H3](evidencias/capturas_app/A5_H3_rechazo_tras_reinicio.png)
+![A5 H3](https://raw.githubusercontent.com/AlejaMejia29/buscador-conocimiento/main/evidencias/capturas_app/A5_H3_rechazo_tras_reinicio.png)
 
 **H4. Aislamiento entre usuarios.** La segunda cuenta solo ve su propia conversación.
 
-![H4 usuario 2 aislado](evidencias/capturas_app/H4_usuario2_aislado.png)
+![H4 usuario 2 aislado](https://raw.githubusercontent.com/AlejaMejia29/buscador-conocimiento/main/evidencias/capturas_app/H4_usuario2_aislado.png)
 
 **H5. Historial guardado por usuario en Supabase.** usuario1: 2 conversaciones y 22 mensajes; usuario2: 1 conversación y 2 mensajes.
 
-![H5 filas por usuario](evidencias/capturas_app/H5_filas_por_usuario_supabase.png)
+![H5 filas por usuario](https://raw.githubusercontent.com/AlejaMejia29/buscador-conocimiento/main/evidencias/capturas_app/H5_filas_por_usuario_supabase.png)
 
 ---
 
